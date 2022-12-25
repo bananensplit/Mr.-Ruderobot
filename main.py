@@ -1,6 +1,8 @@
 import logging
+import os
 
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -23,7 +25,7 @@ class QuestionModel(BaseModel):
     
 
 def get_total_requests():
-    with MongoClient("mongodb://localhost:27017/") as client:
+    with MongoClient(MONGO_CONNECTION_STRING) as client:
         collection = client["chat-gpt"]["requests"]
         total_requests = collection.count_documents({})
     return total_requests
@@ -75,7 +77,25 @@ if __name__ == '__main__':
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
+    # Load environment variables
+    load_dotenv()
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    MONGO_CONNECTION_STRING = os.getenv("MONGO_CONNECTION_STRING")
+    
+    if OPENAI_API_KEY is None:
+        logger.error("OPENAI_API_KEY environment variable not set!")
+        exit(1)
+    if MONGO_CONNECTION_STRING is None:
+        logger.error("MONGO_CONNECTION_STRING environment variable not set!")
+        exit(1)
+
     # Setup queue thread
-    queue_thread = QueueThread(name="QueueThread", logger=logger, daemon=True)
+    queue_thread = QueueThread(
+        name="QueueThread",
+        api_key=OPENAI_API_KEY,
+        mongo_connection_string=MONGO_CONNECTION_STRING,
+        logger=logger,
+        daemon=True
+    )
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

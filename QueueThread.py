@@ -10,9 +10,11 @@ from pymongo import MongoClient
 
 
 class QueueThread(threading.Thread):
-    def __init__(self, name="QueueThread", logger=None, daemon=True, *args, **kwargs):
+    def __init__(self, name="QueueThread", api_key=None, mongo_connection_string=None, logger=None, daemon=True, *args, **kwargs):
         super().__init__(name=name, daemon=daemon, *args, **kwargs)
         self.queue = Queue()
+        self.api_key = api_key
+        self.mongo_connection_string = mongo_connection_string
         self.logger = logging.getLogger(__name__) if logger is None else logger
         self.stopp = False
 
@@ -37,65 +39,64 @@ class QueueThread(threading.Thread):
                 continue
 
             question, future = self.queue.get()
-            answer = ask_openai(question, self.logger)
+            answer = self.ask_openai(question)
 
             # Setting future result
             future.set_result(answer)
             self.queue.task_done()
             time.sleep(5)
 
+    def ask_openai(self, question):
+        # Do request
+        openai.api_key = self.api_key
 
-def ask_openai(question, logger: logging.Logger):
-    # Do request
-    openai.api_key = "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"
+        prompt = "The following is a conversation with an AI assistant named 'Mr. Robot'. The assistant will answer every question in a sarcastic, insulting and snooty manner. The AI assistant will occasionally also use words like 'idiot' and 'smartass'.\n\nHuman:"
+        prompt += question
+        prompt += "\nAI: "
 
-    prompt = "The following is a conversation with an AI assistant named 'Mr. Robot'. The assistant will answer every question in a sarcastic, insulting and snooty manner. The AI assistant will occasionally also use words like 'idiot' and 'smartass'.\n\nHuman:"
-    prompt += question
-    prompt += "\nAI: "
+        # response = await openai_async.complete(
+        #     "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",
+        #     timeout=None,
+        #     payload={
+        #         "model": "text-davinci-003",
+        #         "prompt": prompt,
+        #         "temperature": 0.7,
+        #         "max_tokens": 256,
+        #         "top_p":1,
+        #         "frequency_penalty": 0,
+        #         "presence_penalty": 0,
+        #         "stop": ["\nAI:", "\nHuman:"],
+        #     }
+        # )
+        # response = response.json()
 
-    # response = await openai_async.complete(
-    #     "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",
-    #     timeout=None,
-    #     payload={
-    #         "model": "text-davinci-003",
-    #         "prompt": prompt,
-    #         "temperature": 0.7,
-    #         "max_tokens": 256,
-    #         "top_p":1,
-    #         "frequency_penalty": 0,
-    #         "presence_penalty": 0,
-    #         "stop": ["\nAI:", "\nHuman:"],
-    #     }
-    # )
-    # response = response.json()
+        #TODO: Schauen wann die acreate commiten und dann die Version hier verwenden
+        # response = openai.Completion.acreate(
+        #     model="text-davinci-003",
+        #     prompt=prompt,
+        #     temperature=0.7,
+        #     max_tokens=256,
+        #     top_p=1,
+        #     frequency_penalty=0,
+        #     presence_penalty=0,
+        #     stop=["\nAI:", "\nHuman:"],
+        # )
 
-    #TODO: Schauen wann die acreate commiten und dann die Version hier verwenden
-    # response = openai.Completion.acreate(
-    #     model="text-davinci-003",
-    #     prompt=prompt,
-    #     temperature=0.7,
-    #     max_tokens=256,
-    #     top_p=1,
-    #     frequency_penalty=0,
-    #     presence_penalty=0,
-    #     stop=["\nAI:", "\nHuman:"],
-    # )
-    
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=prompt,
-        temperature=0.7,
-        max_tokens=256,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
-        stop=["\nAI:", "\nHuman:"],
-    )
+        response = openai.Completion.create(
+            model="text-davinci-003",
+            prompt=prompt,
+            temperature=0.7,
+            max_tokens=256,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            stop=["\nAI:", "\nHuman:"],
+        )
 
-    answer = response["choices"][0]["text"].strip()
+        answer = response["choices"][0]["text"].strip()
 
-    with MongoClient("mongodb://localhost:27017/") as client:
-        collection = client["chat-gpt"]["requests"]
-        collection.insert_one({"question": question, "answer": answer, "response": response, "time": datetime.now()})
+        with MongoClient(self.mongo_connection_string) as client:
+            collection = client["chat-gpt"]["requests"]
+            collection.insert_one({"question": question, "answer": answer, "response": response, "time": datetime.now()})
 
-    return answer
+        return answer
