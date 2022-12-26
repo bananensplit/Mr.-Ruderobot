@@ -74,7 +74,7 @@ const templateQuestions = [
 ];
 
 function App() {
-    const [request, setRequest] = useState(templateQuestions[Math.floor(Math.random()*templateQuestions.length)]);
+    const [request, setRequest] = useState(templateQuestions[Math.floor(Math.random() * templateQuestions.length)]);
     const [charCounter, setCharCounter] = useState(request.length);
     const [requestCounter, setRequestCounter] = useState(0);
     const [totalRequests, setTotalRequests] = useState(0);
@@ -97,8 +97,7 @@ function App() {
     }, [request]);
 
     function updateMetadata() {
-        // fetch("http://10.0.0.150:12345/api/metadata")
-        fetch("http://127.0.0.1:80/api/metadata")
+        fetch("api/metadata")
             .then((data) => data.json())
             .then((data) => {
                 setTotalRequests(data.totalrequests);
@@ -114,8 +113,7 @@ function App() {
         setLoading(true);
         setRequestCounter((requestCounter) => requestCounter + 1);
 
-        // fetch("http://10.0.0.150:12345/api/askquestion", {
-        fetch("http://127.0.0.1:80/api/askquestion", {
+        fetch("api/askquestion", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -137,23 +135,30 @@ function App() {
     };
 
     return (
-        <TemplateBanana
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-            }}
-        >
-            <Grid container spacing={5} columns={4} sx={{ width: "100%", padding: "0 30px 0 30px" }}>
+        <TemplateBanana>
+            <Grid
+                container
+                spacing={5}
+                columns={4}
+                sx={{ width: "100%", height: "100%", padding: { md: "20px 70px", xs: "10px" }, margin: 0 }}
+            >
                 <Grid
-                    xs
+                    lg={1}
+                    md={1}
+                    xs={4}
+                    order={{ lg: 1, md: 1, xs: 3 }}
                     sx={{
                         display: "flex",
                         flexDirection: "column",
-                        alignItems: "flex-end",
+                        alignItems: {
+                            md: "flex-end",
+                            xs: "center",
+                        },
                         justifyContent: "center",
-                        textAlign: "right",
+                        textAlign: {
+                            md: "right",
+                            xs: "center",
+                        },
                     }}
                 >
                     <Typography variant="h4">Request counter</Typography>
@@ -178,25 +183,37 @@ function App() {
                         Pending requests
                     </Typography>
                     <Typography variant="h1">{pendingRequests}</Typography>
-                    <Typography variant="body1">requests are currently beeing processed.</Typography>
+                    <Typography variant="body1">
+                        requests are currently <br /> beeing processed.
+                        <br />
+                        The estimated waiting time <br /> is about{" "}
+                        <Typography variant="h3" sx={{ display: "inline-block" }}>
+                            {pendingRequests * 5} seconds
+                        </Typography>
+                    </Typography>
                 </Grid>
+
                 <Grid
-                    xs={2}
+                    lg={2}
+                    md={3}
+                    xs={4}
+                    order={{ lg: 2, md: 2, xs: 1 }}
                     sx={{
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",
-                        maxWidth: "600px",
                     }}
                 >
-                    <Typography variant="h1">Rude Mr. Robot 🤖</Typography>
-                    <Typography variant="body1">
+                    <Typography variant="h1" align="center">
+                        Rude Mr. Robot 🤖
+                    </Typography>
+                    <Typography variant="body1" align="center">
                         Rude Mr. Robot is a website that <b>answers your questions</b> in a <b>rude</b> way.
                         <br />
                     </Typography>
                     <TextField
-                        sx={{ width: "100%", marginTop: "40px" }}
+                        sx={{ width: "100%", marginTop: "40px", maxWidth: "600px" }}
                         label={"Your Question (" + charCounter + "/128)"}
                         multiline
                         minRows={6}
@@ -238,6 +255,7 @@ function App() {
                                 background: "#e0e0e0",
                                 padding: "2px 5px 2px 5px",
                                 borderRadius: "5px",
+                                maxWidth: "600px",
                             }}
                         >
                             Answer from Mr. Robot
@@ -245,8 +263,12 @@ function App() {
                         {answer}
                     </Typography>
                 </Grid>
+
                 <Grid
-                    xs
+                    lg={1}
+                    md={4}
+                    xs={4}
+                    order={{ lg: 3, md: 3, xs: 2 }}
                     sx={{
                         display: "flex",
                         flexDirection: "column",
