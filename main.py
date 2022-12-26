@@ -9,7 +9,6 @@ from pymongo import MongoClient
 
 from QueueThread import QueueThread
 
-
 # Setup Logging
 logger = logging.getLogger("KURWA")
 logger.setLevel(logging.DEBUG)
@@ -93,10 +92,8 @@ async def askquestion(request: QuestionModel, response: Response):
         response.status_code = status.HTTP_400_BAD_REQUEST
         return {"message": "Question must be between 1 and 128 characters long."}
 
-    logger.debug(f"api/askquestion: question='{question}' added to queue")
-    future = queue_thread.put(question)
     logger.debug(f"api/askquestion: question='{question}' waiting for answer")
-    answer = future.result()
+    answer = await queue_thread.put(question)
     
     logger.debug(f"api/askquestion: question='{question}' got answer='{answer}'")
     return {"answer": answer}

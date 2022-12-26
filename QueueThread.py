@@ -1,9 +1,9 @@
+import asyncio
 import logging
 import threading
 import time
-from concurrent.futures import Future
+from collections import deque
 from datetime import datetime
-from queue import Queue
 
 import openai
 from pymongo import MongoClient
@@ -12,38 +12,46 @@ from pymongo import MongoClient
 class QueueThread(threading.Thread):
     def __init__(self, name="QueueThread", api_key=None, mongo_connection_string=None, logger=None, daemon=True, *args, **kwargs):
         super().__init__(name=name, daemon=daemon, *args, **kwargs)
-        self.queue = Queue()
+        self.queue = deque()
+        self.loop = None
+
         self.api_key = api_key
         self.mongo_connection_string = mongo_connection_string
         self.logger = logging.getLogger(__name__) if logger is None else logger
         self.stopp = False
 
-    def put(self, question):
-        future = Future()
-        self.queue.put([question, future])
-        return future
+    async def put(self, question):
+        future = asyncio.Future(loop=self.loop)
+        self.queue.append([question, future])
+
+        while not future.done():
+            await asyncio.sleep(1)
+        
+        return future.result()
 
     def get_pending_requests(self) -> int:
-        return self.queue.qsize()
+        return len(self.queue)
 
     def stop(self):
         self.stopp = True
 
     def run(self) -> None:
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+
         while True:
             if self.stopp:
                 break
 
-            if self.queue.empty():
+            if len(self.queue) == 0:
                 time.sleep(1)
                 continue
 
-            question, future = self.queue.get()
+            question, future = self.queue.popleft()
             answer = self.ask_openai(question)
 
             # Setting future result
             future.set_result(answer)
-            self.queue.task_done()
             time.sleep(5)
 
     def ask_openai(self, question):
