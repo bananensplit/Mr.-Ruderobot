@@ -18,6 +18,7 @@ fh = logging.FileHandler('logs/fastapi.log')
 ch.setFormatter(formatter)
 fh.setFormatter(formatter)
 logger.addHandler(ch)
+logger.addHandler(fh)
 
 # Load environment variables
 load_dotenv()
