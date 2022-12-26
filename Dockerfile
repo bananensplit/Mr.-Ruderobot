@@ -2,16 +2,18 @@ FROM python:3.9.16
 
 WORKDIR /usr/src/app
 
-# Copy the source code
+# COPY THE SOURCE CODE
+# Backend
 COPY requirements.txt ./
 COPY main.py ./
 COPY QueueThread.py ./
 
+# Frontend
+COPY frontend/dist ./frontend/dist
+
+# SETUP FASTAPI
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Expose port 80
-EXPOSE 80
 
 # Setup Log
 RUN mkdir logs
@@ -24,5 +26,8 @@ RUN touch .env
 RUN echo "OPENAI_API_KEY=\"${OPENAI_API_KEY}\"" >> .env
 RUN echo "MONGO_CONNECTION_STRING=\"${MONGO_CONNECTION_STRING}\"" >> .env
 
-# Run the app
+# EXPOSE PORT 80
+EXPOSE 80
+
+# RUN THE APP
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]

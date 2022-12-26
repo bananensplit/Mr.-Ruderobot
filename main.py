@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from pymongo import MongoClient
 
@@ -42,7 +43,7 @@ queue_thread = QueueThread(
 )
 
 
-app = FastAPI()
+app = FastAPI(root_path="/ruderobot/", title="Mr. Robot Chat API (powered by OpenAI)")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,7 +55,6 @@ app.add_middleware(
 
 class QuestionModel(BaseModel):
     question: str
-    
 
 def get_total_requests():
     with MongoClient(MONGO_CONNECTION_STRING) as client:
@@ -75,6 +75,11 @@ async def startup_event():
 async def shutdown_event():
     logger.info("FastAPI shutdown")
     queue_thread.stop()
+
+
+@app.get("/api", status_code=200, include_in_schema=False)
+async def root_info(response: Response):
+    return {"message": "go to /api/docs to get to documentation for this API"}
 
 
 @app.get("/api/metadata", status_code=200)
@@ -99,3 +104,6 @@ async def askquestion(request: QuestionModel, response: Response):
     
     logger.info(f"api/askquestion: question='{question}' got answer='{answer}'")
     return {"answer": answer}
+
+
+app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
