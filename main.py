@@ -13,9 +13,11 @@ from QueueThread import QueueThread
 # Setup Logging
 logger = logging.getLogger("KURWA")
 logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
 formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+ch = logging.StreamHandler()
+fh = logging.FileHandler('logs/fastapi.log')
 ch.setFormatter(formatter)
+fh.setFormatter(formatter)
 logger.addHandler(ch)
 
 # Load environment variables
@@ -64,6 +66,8 @@ def get_total_requests():
 @app.on_event("startup")
 async def startup_event():
     logger.info("FastAPI startup")
+    logger.info("Using OPENAI_API_KEY: %s", OPENAI_API_KEY)
+    logger.info("Using MONGO_CONNECTION_STRING: %s", MONGO_CONNECTION_STRING)
     queue_thread.start()
 
 
