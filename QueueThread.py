@@ -28,7 +28,6 @@ class QueueThread(threading.Thread):
         return future.result()
 
     def get_pending_requests(self) -> int:
-        self.logger.debug(asyncio.all_tasks(self.loop))
         return len(asyncio.all_tasks(self.loop))
 
     def stop(self):

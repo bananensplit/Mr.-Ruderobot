@@ -80,21 +80,22 @@ async def shutdown_event():
 @app.get("/api/metadata", status_code=200)
 async def get_metadata(response: Response):
     total, pending = get_total_requests(), queue_thread.get_pending_requests()
-    logger.debug(f"api/metadata requested: total={total}, pending={pending}")
+    logger.info(f"api/metadata requested: total={total}, pending={pending}")
     return {"totalrequests": total, "pendingrequests": pending}
 
 
 @app.post("/api/askquestion", status_code=200)
 async def askquestion(request: QuestionModel, response: Response):
     question = request.question
-    logger.debug(f"api/askquestion: received request, question='{question}'")
+    logger.info(f"api/askquestion: received request, question='{question}'")
 
     if len(question) <= 0 or len(question) > 128:
         response.status_code = status.HTTP_400_BAD_REQUEST
+        logger.error(f"api/askquestion: question='{question}' is invalid (too many characters)")
         return {"message": "Question must be between 1 and 128 characters long."}
 
     logger.debug(f"api/askquestion: question='{question}' waiting for answer")
     answer = await queue_thread.put(question)
     
-    logger.debug(f"api/askquestion: question='{question}' got answer='{answer}'")
+    logger.info(f"api/askquestion: question='{question}' got answer='{answer}'")
     return {"answer": answer}
