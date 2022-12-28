@@ -1,16 +1,17 @@
+import EmojiObjectsRoundedIcon from "@mui/icons-material/EmojiObjectsRounded";
 import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import Paper from "@mui/material/Paper";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useEffect, useState } from "react";
-import TemplateBanana from "../TemplateBanana";
+import Request from "../components/Request";
+import TemplateBanana from "../components/TemplateBanana";
 
-function Requests({ children, templateQuestions }) {
+function Requests({ templateQuestions }) {
     const [requests, setRequests] = useState([]);
+
     useEffect(() => {
-        // fetch("api/allquestions")
-        fetch("http://127.0.0.1:80/api/allquestions")
+        fetch(`${import.meta.env.BASE_URL}api/allquestions`)
             .then((response) => response.json())
             .then((data) => {
                 setRequests(data?.questions || requests);
@@ -22,74 +23,116 @@ function Requests({ children, templateQuestions }) {
 
     return (
         <TemplateBanana>
-            <Box
-                sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    margin: "30px",
-                }}
-            >
-                <Typography variant="h1" align="center">
-                    Rude Mr. Robot 🤖
-                </Typography>
-                <Typography variant="h3" align="center">
-                    <Typography variant="body1" display="inline-block">
-                        rude
-                    </Typography>{" "}
-                    Requests{" "}
-                    <Typography variant="body1" display="inline-block">
-                        and
-                    </Typography>{" "}
-                    Answers
-                </Typography>
+            <Grid container columns={12} spacing={2} sx={{ m: "30px" }}>
+                <Grid
+                    item
+                    lgOffset={3}
+                    lg={6}
+                    xsOffset={0}
+                    xs={12}
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                    }}
+                >
+                    <Typography variant="h1" align="center">
+                        Rude Mr. Robot 🤖
+                    </Typography>
+                    <Typography variant="h3" align="center">
+                        <Typography variant="body1" display="inline-block">
+                            rude
+                        </Typography>{" "}
+                        Requests{" "}
+                        <Typography variant="body1" display="inline-block">
+                            and
+                        </Typography>{" "}
+                        Answers
+                    </Typography>
 
-                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px", mt: "30px" }}>
-                    {requests.map((request) => (
-                        <Paper elevation={4} sx={{ width: "100%", maxWidth: "700px", padding: "20px" }}>
-                            <Grid container columns={2} columnSpacing={2}>
-                                <Grid item xs>
-                                    <Typography variant="h5">Question</Typography>
-                                    <Typography variant="body1">{request?.question || "-"}</Typography>
-                                </Grid>
-                                <Divider orientation="vertical" flexItem />
-                                <Grid item xs>
-                                    <Typography variant="h5">Answer</Typography>
-                                    <Typography variant="body1">{request?.answer || "-"}</Typography>
-                                </Grid>
-                            </Grid>
-                            <Divider sx={{ mt: "10px" }} />
-                            <Grid
-                                container
-                                columns={6}
-                                rowSpacing={0}
-                                columnSpacing={3}
-                                sx={{ width: "100%", maxWidth: "250px", mt: "10px" }}
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px", mt: "30px" }}>
+                        {requests.map((request) => (
+                            <Request request={request} templateQuestion={templateQuestions.includes(request.question)} />
+                        ))}
+                    </Box>
+                </Grid>
+
+                <Grid
+                    item
+                    lg={2}
+                    sx={{
+                        position: "sticky",
+                        top: "10px",
+                        height: "max-content",
+                        display: { lg: "flex", xs: "none" },
+                        flexDirection: "column",
+                        gap: "10px",
+                    }}
+                >
+                    <Box sx={{ mt: "30px" }}>
+                        <Typography variant="h3">{requests.length || "-"}</Typography>
+                        <Typography variant="body2">total questions</Typography>
+                    </Box>
+
+                    <Box>
+                        <Typography variant="h3">
+                            {requests.map((request) => request.prompt_tokens).reduce((a, b) => a + b, 0) || "-"}
+                        </Typography>
+                        <Typography variant="body2">tokens used in questions</Typography>
+                    </Box>
+
+                    <Box>
+                        <Typography variant="h3">
+                            {requests.map((request) => request.completion_tokens).reduce((a, b) => a + b, 0) || "-"}
+                        </Typography>
+                        <Typography variant="body2">tokens used in answers</Typography>
+                    </Box>
+
+                    <Box>
+                        <Typography variant="h3">
+                            {requests.map((request) => request.total_tokens).reduce((a, b) => a + b, 0) || "-"}
+                        </Typography>
+                        <Typography variant="body2">total tokens used</Typography>
+                    </Box>
+
+                    <Box>
+                        <Typography variant="h3">
+                            {(requests.map((request) => request.total_tokens).reduce((a, b) => a + b, 0) * 0.0000204918).toFixed(
+                                2
+                            ) || "-"}{" "}
+                            $
+                        </Typography>
+                        <Typography variant="body2">total tokens in $</Typography>
+                    </Box>
+
+                    <Box>
+                        <Typography variant="body2">Indicators</Typography>
+                        <Typography variant="h3" sx={{ display: "flex" }}>
+                            <Tooltip
+                                sx={{ fontSize: (theme) => theme.typography.h3.fontSize }}
+                                title="Indicates that this question was in the sample set provided by the developer."
+                                arrow
                             >
-                                <Grid item xs={1}>
-                                    <Typography variant="body1">{request?.prompt_tokens || "-"}</Typography>
-                                </Grid>
-                                <Grid item xs={5}>
-                                    <Typography variant="subtitle2">Tokens used for Prompt</Typography>
-                                </Grid>
-                                <Grid item xs={1}>
-                                    <Typography variant="body1">{request?.completion_tokens || "-"}</Typography>
-                                </Grid>
-                                <Grid item xs={5}>
-                                    <Typography variant="subtitle2">Tokens used for Answer</Typography>
-                                </Grid>
-                                <Grid item xs={1}>
-                                    <Typography variant="body1">{request?.total_tokens || "-"}</Typography>
-                                </Grid>
-                                <Grid item xs={5}>
-                                    <Typography variant="subtitle2">Total tokens used</Typography>
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    ))}
-                </Box>
-            </Box>
-            {children}
+                                <EmojiObjectsRoundedIcon
+                                    sx={{
+                                        color: (theme) => theme.palette.primary.light,
+                                        fontSize: (theme) => theme.typography.h3.fontSize,
+                                    }}
+                                />
+                            </Tooltip>
+                            {requests.filter((request) => templateQuestions.includes(request?.question)).length}
+                            /
+                            <EmojiObjectsRoundedIcon
+                                sx={{
+                                    color: (theme) => theme.palette.grey[300],
+                                    fontSize: (theme) => theme.typography.h3.fontSize,
+                                }}
+                            />
+                            {requests.filter((request) => !templateQuestions.includes(request?.question)).length}
+                        </Typography>
+                    </Box>
+                </Grid>
+            </Grid>
         </TemplateBanana>
     );
 }

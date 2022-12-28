@@ -1,8 +1,8 @@
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import App from "./App";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import App from "./Pages/App";
 import Requests from "./Pages/Requests";
 
 const theme = createTheme({
@@ -100,21 +100,38 @@ const templateQuestions = [
     "Where was the most in appropriate / most embarrassing place you’ve farted?",
 ];
 
+export const RemoveTrailingSlash = ({...rest}) => {
+    const location = useLocation()
+    if (location.pathname.match('/.*/$')) {
+        return <Navigate replace {...rest} to={{
+            pathname: location.pathname.replace(/\/+$/, ""),
+            search: location.search
+        }}/>
+    } else return null
+}
+
+export const AddTrailingSlash = ({...rest}) => {
+    const location = useLocation();
+    if (location.pathname.match('.*[^/]$')) {
+        return <Navigate replace {...rest} to={{
+            pathname: location.pathname + "/",
+            search: location.search
+        }}/>
+    } else return null
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
         <ThemeProvider theme={theme}>
-            <BrowserRouter basename="/ruderobot/">
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
+            {/* <BrowserRouter> */}
+                <AddTrailingSlash />
                 <Routes>
                     <Route path="/" element={<App templateQuestions={templateQuestions} />} />
-                    <Route
-                        path="/requests"
-                        element={<Requests templateQuestions={templateQuestions} />}
-                    />
+                    <Route path="/requests" element={<Requests templateQuestions={templateQuestions} />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </BrowserRouter>
-
-            {/* <RouterProvider router={router} /> */}
         </ThemeProvider>
     </React.StrictMode>
 );

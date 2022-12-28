@@ -1,16 +1,15 @@
+import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useEffect, useState } from "react";
-import TemplateBanana from "./TemplateBanana";
-
-import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { Link } from "react-router-dom";
+import TemplateBanana from "../components/TemplateBanana";
 
-function App(templateQuestions=[]) {
+function App({ templateQuestions = [] }) {
     const [request, setRequest] = useState(templateQuestions[Math.floor(Math.random() * templateQuestions.length)]);
     const [charCounter, setCharCounter] = useState(request.length);
     const [requestCounter, setRequestCounter] = useState(0);
@@ -23,9 +22,8 @@ function App(templateQuestions=[]) {
 
     useEffect(() => {
         updateMetadata();
-        // const interval = setInterval(updateMetadata, 5000);
-        // const interval = setInterval(updateMetadata, 1000);
-        // return () => clearInterval(interval);
+        const interval = setInterval(updateMetadata, 2500);
+        return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
@@ -34,7 +32,7 @@ function App(templateQuestions=[]) {
     }, [request]);
 
     function updateMetadata() {
-        fetch("api/metadata")
+        fetch(`${import.meta.env.BASE_URL}api/metadata`)
             .then((data) => data.json())
             .then((data) => {
                 setTotalRequests(data.totalrequests);
@@ -50,14 +48,14 @@ function App(templateQuestions=[]) {
         setLoading(true);
         setRequestCounter((requestCounter) => requestCounter + 1);
 
-        fetch("api/askquestion", {
+        fetch(`${import.meta.env.BASE_URL}api/askquestion`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 question: request,
-            }),A
+            }),
         })
             .then((data) => data.json())
             .then((data) => {
