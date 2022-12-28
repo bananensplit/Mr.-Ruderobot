@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 
@@ -53,8 +54,21 @@ app.add_middleware(
 )
 
 
-class QuestionModel(BaseModel):
+class RequestQuestionModel(BaseModel):
     question: str
+
+class ResponseQuestionModel(BaseModel):
+    question: str
+    answer: str
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    time: datetime.datetime
+
+class ResponseAllQuestionsModel(BaseModel):
+    total_questions: int
+    questions: list[ResponseQuestionModel]
+
 
 def get_total_requests():
     with MongoClient(MONGO_CONNECTION_STRING) as client:
@@ -90,7 +104,7 @@ async def get_metadata(response: Response):
 
 
 @app.post("/api/askquestion", status_code=200)
-async def askquestion(request: QuestionModel, response: Response):
+async def askquestion(request: RequestQuestionModel, response: Response):
     question = request.question
     logger.info(f"api/askquestion: received request, question='{question}'")
 
@@ -104,6 +118,27 @@ async def askquestion(request: QuestionModel, response: Response):
     
     logger.info(f"api/askquestion: question='{question}' got answer='{answer}'")
     return {"answer": answer}
+    
+
+@app.get("/api/allquestions", status_code=200, response_model=ResponseAllQuestionsModel)
+async def allquestions(response: Response):
+    logger.info(f"api/allquestions: received request")
+
+    with MongoClient(MONGO_CONNECTION_STRING) as client:
+        collection = client["chat-gpt"]["requests"]
+        all_questions = collection.find({})
+        all_questions = [ResponseQuestionModel(**{
+            "question": question["question"],
+            "answer": question["answer"],
+            "prompt_tokens": question["response"]["usage"]["prompt_tokens"],
+            "completion_tokens": question["response"]["usage"]["completion_tokens"],
+            "total_tokens": question["response"]["usage"]["total_tokens"],
+            "time": question["time"]
+        }) for question in all_questions]
+        total_questions = len(all_questions)
+        logger.info(f"api/allquestions: got {total_questions} questions")
+    
+    return ResponseAllQuestionsModel(total_questions=total_questions, questions=all_questions)
 
 
 app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
