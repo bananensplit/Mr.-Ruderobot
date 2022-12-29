@@ -32,7 +32,7 @@ function App({ templateQuestions = [] }) {
     }, [request]);
 
     function updateMetadata() {
-        fetch(`${import.meta.env.BASE_URL}api/metadata`)
+        fetch(`${import.meta.env.BASE_URL.replace(/\/+$/, "")}api/metadata`)
             .then((data) => data.json())
             .then((data) => {
                 setTotalRequests(data.totalrequests);
@@ -48,7 +48,7 @@ function App({ templateQuestions = [] }) {
         setLoading(true);
         setRequestCounter((requestCounter) => requestCounter + 1);
 
-        fetch(`${import.meta.env.BASE_URL}api/askquestion`, {
+        fetch(`${import.meta.env.BASE_URL.replace(/\/+$/, "")}/api/askquestion`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
