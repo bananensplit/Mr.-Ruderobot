@@ -11,7 +11,7 @@ function Requests({ templateQuestions }) {
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        fetch(`${import.meta.env.BASE_URL}/api/allquestions`)
+        fetch(`${import.meta.env.BASE_URL}api/allquestions`)
             .then((response) => response.json())
             .then((data) => {
                 setRequests(data?.questions || requests);

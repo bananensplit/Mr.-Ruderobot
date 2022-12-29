@@ -21,10 +21,12 @@ RUN mkdir logs
 # Create .env file
 ENV OPENAI_API_KEY=""
 ENV MONGO_CONNECTION_STRING=""
+ENV BASE_URL="/"
 
 RUN touch .env
 RUN echo "OPENAI_API_KEY=\"${OPENAI_API_KEY}\"" >> .env
 RUN echo "MONGO_CONNECTION_STRING=\"${MONGO_CONNECTION_STRING}\"" >> .env
+RUN echo "BASE_URL=\"${BASE_URL}\"" >> .env
 
 # EXPOSE PORT 80
 EXPOSE 80

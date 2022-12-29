@@ -3,9 +3,11 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pymongo import MongoClient
 
@@ -26,6 +28,7 @@ logger.addHandler(fh)
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MONGO_CONNECTION_STRING = os.getenv("MONGO_CONNECTION_STRING")
+BASE_URL = os.getenv("BASE_URL")
 
 if OPENAI_API_KEY is None:
     logger.error("OPENAI_API_KEY environment variable not set!")
@@ -44,7 +47,7 @@ queue_thread = QueueThread(
 )
 
 
-app = FastAPI(root_path="/ruderobot/", title="Mr. Robot Chat API (powered by OpenAI)")
+app = FastAPI(root_path=BASE_URL, title="Mr. Robot Chat API (powered by OpenAI)")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -52,6 +55,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+templates = Jinja2Templates(directory="frontend/dist")
 
 
 class RequestQuestionModel(BaseModel):
@@ -82,6 +87,7 @@ async def startup_event():
     logger.info("FastAPI startup")
     logger.info("Using OPENAI_API_KEY: %s", OPENAI_API_KEY)
     logger.info("Using MONGO_CONNECTION_STRING: %s", MONGO_CONNECTION_STRING)
+    logger.info("Using BASE_URL: %s", BASE_URL)
     queue_thread.start()
 
 
@@ -91,8 +97,8 @@ async def shutdown_event():
     queue_thread.stop()
 
 
-@app.get("/api", status_code=200, include_in_schema=False)
-async def root_info(response: Response):
+@app.get("/api", include_in_schema=False)
+async def api_info(response: Response):
     return {"message": "go to /api/docs to get to documentation for this API"}
 
 
@@ -126,7 +132,7 @@ async def allquestions(response: Response):
 
     with MongoClient(MONGO_CONNECTION_STRING) as client:
         collection = client["chat-gpt"]["requests"]
-        all_questions = collection.find({})
+        all_questions = collection.find({}).sort("time", -1)
         all_questions = [ResponseQuestionModel(**{
             "question": question["question"],
             "answer": question["answer"],
@@ -141,4 +147,10 @@ async def allquestions(response: Response):
     return ResponseAllQuestionsModel(total_questions=total_questions, questions=all_questions)
 
 
-app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
+app.mount("/assets", StaticFiles(directory="frontend/dist/assets", html=True, check_dir=True), name="frontend-assets")
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_frontend(request: Request, full_path: str):
+    logger.info(f"frontend: serving frontend for path={full_path}")
+    return templates.TemplateResponse("index.html", {"request": request})
