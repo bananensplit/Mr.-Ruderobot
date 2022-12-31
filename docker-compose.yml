@@ -1,0 +1,41 @@
+version: "3.9"
+services:
+  gpt-chat-web:
+    build: .
+    networks:
+      backend:
+        ipv4_address: 172.18.0.3
+    environment:
+      OPENAI_API_KEY: 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
+      MONGO_CONNECTION_STRING: mongodb://root:rootPassword@172.18.0.2:27017
+      BASE_URL: /ruderobot
+    ports:
+      - "8112:80"
+    depends_on:
+      - gpt-chat-db
+
+  gpt-chat-db:
+    image: mongo
+    networks:
+      backend:
+        ipv4_address: 172.18.0.2
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootPassword
+    ports:
+      - "27017:27017"
+
+
+volumes:
+  gpt-chat-db-volume: {}
+
+
+networks:
+  backend:
+    name: gpt-chat-net
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/16
+          gateway: 172.18.0.1
