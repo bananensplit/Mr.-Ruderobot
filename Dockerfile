@@ -1,32 +1,36 @@
 FROM python:3.9.16
 
-WORKDIR /usr/src/app
 
-# COPY THE SOURCE CODE
-# Backend
-COPY requirements.txt ./
-COPY main.py ./
-COPY QueueThread.py ./
+# SETUP THE BACKEND
+WORKDIR /usr/src/app/backend
 
-# Frontend
-COPY frontend/dist ./frontend/dist
+COPY backend/requirements.txt ./
+COPY backend/main.py ./
+COPY backend/QueueThread.py ./
 
-# SETUP FASTAPI
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Setup Log
-RUN mkdir logs
+RUN mkdir backend/logs
 
 # Create .env file
 ENV OPENAI_API_KEY=""
 ENV MONGO_CONNECTION_STRING=""
 ENV BASE_URL="/"
 
-RUN touch .env
-RUN echo "OPENAI_API_KEY=\"${OPENAI_API_KEY}\"" >> .env
-RUN echo "MONGO_CONNECTION_STRING=\"${MONGO_CONNECTION_STRING}\"" >> .env
-RUN echo "BASE_URL=\"${BASE_URL}\"" >> .env
+RUN touch backend/.env
+RUN echo "OPENAI_API_KEY=\"${OPENAI_API_KEY}\"" >> ./backend/.env
+RUN echo "MONGO_CONNECTION_STRING=\"${MONGO_CONNECTION_STRING}\"" >> ./backend/.env
+RUN echo "BASE_URL=\"${BASE_URL}\"" >> ./backend/.env
+
+
+# SETUP THE FRONTEND
+WORKDIR /usr/src/app/frontend
+
+# Frontend
+COPY frontend/dist ./frontend/dist
+
 
 # EXPOSE PORT 80
 EXPOSE 80
