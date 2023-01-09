@@ -1,67 +1,62 @@
-# This is a rude MR. Robot Docker container
+# This is a rude Mr. Ruderobot Docker container
+This is a bot that answers your questions in a rude way.
 
 
 ## Without compose
-When using this container without compose you will need to setup a mongodb server separately, and pass the connection string to this container on startup.
+> Base container:
+> * DockerHub: https://hub.docker.com/r/nikolaik/python-nodejs
+> * GitHub: https://github.com/nikolaik/docker-python-nodejs
 
-### Build the container
+The following script contains all steps you need to complete to start this container without compose.
+
+Please note that you should probably replace things like `<API-KEY>`, `BASE_URL`, `MONGO_INITDB_ROOT_USERNAME`, `MONGO_INITDB_ROOT_PASSWORD` and `MONGO_CONNECTION_STRING` with your own values.
+
+Also the `BASE_URL` can only be set during build time, so you will need to rebuild the container if you want to change it.
+
 ```bash
-docker compose build \
-  -t mr-robot:latest \
-  --build-arg BASE_URL=/ruderobot \
-  .
-```
-
-### Run the container
-```bash
-docker run -d --name gpt-chat-backend \
-	-p 8112:80 \
-	-e OPENAI_API_KEY=<API-KEY> \
-	-e MONGO_CONNECTION_STRING=mongodb://root:rootPassword@172.19.0.2:27017 \
-	-e BASE_URL=/ruderobot \
-	gpt-chat
-```
-
-### Script
-```bash
-# create bridge network
-docker network create gpt-chat-network
-
+# build base container
+docker build -t nikolaik/python-nodejs-own github.com/nikolaik/docker-python-nodejs#main
 
 # build
-docker build -t gpt-chat:latest .
+docker build \
+    -t mr-ruderobot-api:latest \
+    --build-arg BASE_URL=/ruderobot \
+    .
 
+# create bridge network and volume
+docker network create mr-ruderobot_net
+docker volume create mr-ruderobot_db-volume
 
 # start mongo DB
-docker run -d --name gpt-chat-db \
-	-v gpt-chat-db-volume:/data/db \
-	--network gpt-chat-network \
-	-e MONGO_INITDB_ROOT_USERNAME=root \
-	-e MONGO_INITDB_ROOT_PASSWORD=rootPassword \
-	mongo
+docker run -d --name mr-ruderobot-db \
+    -v mr-ruderobot_db-volume:/data/db \
+    --network mr-ruderobot_net \
+    -e MONGO_INITDB_ROOT_USERNAME=root \
+    -e MONGO_INITDB_ROOT_PASSWORD=rootPassword \
+    mongo
 
-
-# start gpt-chat-backend
-docker run -d --name gpt-chat-backend \
-	-p 80:80 \
-	--network gpt-chat-network \
-	-e OPENAI_API_KEY=<API-KEY> \
-	-e MONGO_CONNECTION_STRING=mongodb://root:rootPassword@172.19.0.2:27017 \
-	-e BASE_URL=/ruderobot \
-	gpt-chat
+# start Mr. Ruderobot container
+docker run -d --name mr-ruderobot-api \
+    -p 80:80 \
+    --network mr-ruderobot_net \
+    -e OPENAI_API_KEY=<API-KEY> \
+    -e MONGO_CONNECTION_STRING=mongodb://root:rootPassword@172.19.0.2:27017 \
+    gpt-chat
 ```
 
 
-## Important commands
-### Build the container
-```bash
-docker compose build \
-  -t mr-robot:latest \
-  --build-arg BASE_URL=/ruderobot \
-  .
-```
+## With compose
+Using the provided compose file you can build you can do it following the script below.
 
-### Run the container
+Please note that you should probably replace things like `API_KEY`, `BASE_URL`, `MONGO_INITDB_ROOT_USERNAME`, `MONGO_INITDB_ROOT_PASSWORD` and `MONGO_CONNECTION_STRING` with your own values.
+
 ```bash
-docker compose up -d
+# build base container
+docker build -t nikolaik/python-nodejs-own github.com/nikolaik/docker-python-nodejs#main
+
+# build
+docker-compose build
+
+# start
+docker-compose up -d
 ```
