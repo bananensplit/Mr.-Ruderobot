@@ -1,7 +1,10 @@
 version: "3.9"
 services:
-  gpt-chat-web:
-    build: .
+  api:
+    build:
+      context: .
+      args:
+        BASE_URL: /ruderobot
     networks:
       backend:
         ipv4_address: 172.18.0.3
@@ -12,9 +15,9 @@ services:
     ports:
       - "8112:80"
     depends_on:
-      - gpt-chat-db
+      - db
 
-  gpt-chat-db:
+  db:
     image: mongo
     networks:
       backend:
@@ -24,10 +27,12 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: rootPassword
     ports:
       - "27017:27017"
+    volumes:
+      - "db-volume:/data/db"
 
 
 volumes:
-  gpt-chat-db-volume: {}
+  db-volume: {}
 
 
 networks:

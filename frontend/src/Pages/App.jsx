@@ -32,7 +32,7 @@ function App({ templateQuestions = [] }) {
     }, [request]);
 
     function updateMetadata() {
-        fetch(`${import.meta.env.BASE_URL.replace(/\/+$/, "")}api/metadata`)
+        fetch(`${import.meta.env.BASE_URL.replace(/\/+$/, "")}/api/metadata`)
             .then((data) => data.json())
             .then((data) => {
                 setTotalRequests(data.totalrequests);
