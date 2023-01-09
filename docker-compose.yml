@@ -6,7 +6,7 @@ services:
       args:
         BASE_URL: /ruderobot
     networks:
-      backend:
+      net:
         ipv4_address: 172.18.0.3
     environment:
       OPENAI_API_KEY: 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
@@ -19,7 +19,7 @@ services:
   db:
     image: mongo
     networks:
-      backend:
+      net:
         ipv4_address: 172.18.0.2
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
