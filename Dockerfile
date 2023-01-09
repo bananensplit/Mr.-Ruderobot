@@ -7,7 +7,6 @@ ARG BASE_URL="/"
 # ENVs
 ENV OPENAI_API_KEY=""
 ENV MONGO_CONNECTION_STRING=""
-ENV BASE_URL="/"
 
 
 # SETUP THE FRONTEND
@@ -54,4 +53,4 @@ WORKDIR /home/pn/app/backend
 EXPOSE 80
 
 # RUN THE APP
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]

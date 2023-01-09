@@ -56,7 +56,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-templates = Jinja2Templates(directory="frontend/dist")
+templates = Jinja2Templates(directory="../frontend/dist")
 
 
 class RequestQuestionModel(BaseModel):
@@ -147,7 +147,7 @@ async def allquestions(response: Response):
     return ResponseAllQuestionsModel(total_questions=total_questions, questions=all_questions)
 
 
-app.mount("/assets", StaticFiles(directory="frontend/dist/assets", html=True, check_dir=True), name="frontend-assets")
+app.mount("/assets", StaticFiles(directory="../frontend/dist/assets", html=True, check_dir=True), name="frontend-assets")
 
 
 @app.get("/{full_path:path}", include_in_schema=False)
