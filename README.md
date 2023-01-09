@@ -55,8 +55,8 @@ Please note that you should probably replace things like `API_KEY`, `BASE_URL`, 
 docker build -t nikolaik/python-nodejs-own github.com/nikolaik/docker-python-nodejs#main
 
 # build
-docker-compose build
+docker compose build
 
 # start
-docker-compose up -d
+docker compose up -d
 ```
