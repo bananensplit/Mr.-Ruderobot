@@ -7,7 +7,7 @@ services:
         BASE_URL: /ruderobot
     networks:
       net:
-        ipv4_address: 172.18.0.3
+        ipv4_address: 172.102.0.1
     environment:
       OPENAI_API_KEY: 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
       MONGO_CONNECTION_STRING: mongodb://root:rootPassword@172.18.0.2:27017
@@ -20,7 +20,7 @@ services:
     image: mongo
     networks:
       net:
-        ipv4_address: 172.18.0.2
+        ipv4_address: 172.102.0.2
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootPassword
@@ -40,5 +40,5 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.18.0.0/16
-          gateway: 172.18.0.1
+        - subnet: 172.102.0.0/16
+          gateway: 172.102.0.254

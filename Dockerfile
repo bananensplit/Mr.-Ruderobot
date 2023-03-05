@@ -40,10 +40,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir logs
 
 # Create .env file
-RUN touch .env
-RUN echo "OPENAI_API_KEY=\"${OPENAI_API_KEY}\"" >> .env
-RUN echo "MONGO_CONNECTION_STRING=\"${MONGO_CONNECTION_STRING}\"" >> .env
-RUN echo "BASE_URL=\"${BASE_URL}\"" >> .env
+RUN touch .env && \
+    echo "OPENAI_API_KEY=\"${OPENAI_API_KEY}\"" >> .env && \
+    echo "MONGO_CONNECTION_STRING=\"${MONGO_CONNECTION_STRING}\"" >> .env && \
+    echo "BASE_URL=\"${BASE_URL}\"" >> .env
 
 
 # SETUP THE APP
