@@ -14,9 +14,6 @@ Please note that you should probably replace things like `<API-KEY>`, `BASE_URL`
 Also the `BASE_URL` can only be set during build time, so you will need to rebuild the container if you want to change it.
 
 ```bash
-# build base container
-docker build -t nikolaik/python-nodejs-own github.com/nikolaik/docker-python-nodejs#main
-
 # build
 docker build \
     -t mr-ruderobot-api:latest \
@@ -51,9 +48,6 @@ Using the provided compose file you can build you can do it following the script
 Please note that you should probably replace things like `API_KEY`, `BASE_URL`, `MONGO_INITDB_ROOT_USERNAME`, `MONGO_INITDB_ROOT_PASSWORD` and `MONGO_CONNECTION_STRING` with your own values.
 
 ```bash
-# build base container
-docker build -t nikolaik/python-nodejs-own github.com/nikolaik/docker-python-nodejs#main
-
 # build
 docker compose build
 
