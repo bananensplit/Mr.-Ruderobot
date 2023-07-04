@@ -1,4 +1,4 @@
-FROM nikolaik/python-nodejs:python3.9-nodejs19
+FROM nikolaik/python-nodejs:python3.9-nodejs20
 USER pn
 
 # ARGs
@@ -14,7 +14,7 @@ WORKDIR /home/pn/app/frontend
 
 # Frontend
 COPY frontend/package.json ./
-# COPY frontend/package-lock.json ./
+COPY frontend/package-lock.json ./
 COPY frontend/vite.config.js ./
 COPY frontend/src ./src
 COPY frontend/index.html ./
