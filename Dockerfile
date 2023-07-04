@@ -1,4 +1,4 @@
-FROM nikolaik/python-nodejs-own:latest
+FROM nikolaik/python-nodejs:python3.9-nodejs19
 USER pn
 
 # ARGs
