@@ -14,7 +14,7 @@ WORKDIR /home/pn/app/frontend
 
 # Frontend
 COPY frontend/package.json ./
-COPY frontend/package-lock.json ./
+# COPY frontend/package-lock.json ./
 COPY frontend/vite.config.js ./
 COPY frontend/src ./src
 COPY frontend/index.html ./
