@@ -22,7 +22,7 @@ class QueueThread(threading.Thread):
 
     async def put(self, question):
         future = self.loop.create_future()
-        self.loop.call_soon_threadsafe(self.loop.create_task, self.ask_openai(question, future))
+        self.loop.call_soon_threadsafe(self.loop.create_task, await self.ask_openai(question, future))
         while not future.done():
             await asyncio.sleep(2)
         return future.result()
@@ -67,7 +67,6 @@ class QueueThread(threading.Thread):
             presence_penalty=0,
             stop=["\nAI:", "\nHuman:"],
         )
-
 
         answer = response["choices"][0]["text"].strip()
         future.set_result(answer)

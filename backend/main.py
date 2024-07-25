@@ -3,6 +3,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
+from openai.error import OpenAIError
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -120,8 +121,13 @@ async def askquestion(request: RequestQuestionModel, response: Response):
         return {"message": "Question must be between 1 and 128 characters long."}
 
     logger.debug(f"api/askquestion: question='{question}' waiting for answer")
-    answer = await queue_thread.put(question)
-    
+    try:
+        answer = await queue_thread.put(question)
+    except OpenAIError as e:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        logger.error(f"api/askquestion: question='{question}' generated error: '{e.user_message}'")
+        return {"message": e.user_message}
+
     logger.info(f"api/askquestion: question='{question}' got answer='{answer}'")
     return {"answer": answer}
     
