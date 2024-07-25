@@ -1,6 +1,11 @@
 import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Button from "@mui/material/Button";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -19,6 +24,9 @@ function App({ templateQuestions = [] }) {
 
     const [errorInput, setErrorInput] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const [displayErrorMessage, setDisplayErrorMessage] = useState(false);
+    const [errorResponse, setErrorResponse] = useState(null);
 
     useEffect(() => {
         updateMetadata();
@@ -59,7 +67,13 @@ function App({ templateQuestions = [] }) {
         })
             .then((data) => data.json())
             .then((data) => {
-                setAnswer(data.answer);
+                // handle valid response
+                setAnswer(data?.answer || "-");
+
+                // handle error message
+                setErrorResponse(data?.message || null);
+                setDisplayErrorMessage(data?.message && true || false);
+
                 setLoading(false);
             })
             .catch((error) => {
@@ -71,6 +85,42 @@ function App({ templateQuestions = [] }) {
 
     return (
         <TemplateBanana>
+            <Dialog
+                open={displayErrorMessage}
+                onClose={() => setDisplayErrorMessage(false)}
+            >
+                <DialogTitle sx={{ display: "flex", alignItems: "center", fontSize: "1.5em" }}>
+                    <ErrorOutlineRoundedIcon color="error" sx={{ fontSize: "1.25em", mr: "10px" }} />
+                    Oh no! Something went worng!
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Sometimes something goes wrong and than this message shows up. This shouldn't happen...
+                        Below are some more information to help narrow down the issue.
+                    </DialogContentText>
+                    <Typography
+                        sx={{
+                            position: "relative",
+                            width: "100%",
+                            marginTop: "20px",
+                            maxWidth: "600px",
+                            minHeight: "150px",
+                            background: "#e0e0e0",
+                            fontFamily: "monospace",
+                            padding: "20px",
+                            borderRadius: "5px",
+                        }}
+                        variant="body1"
+                    >
+                        {errorResponse || "No information :/"}
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDisplayErrorMessage(false)} autoFocus>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Grid
                 container
                 spacing={5}
