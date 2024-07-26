@@ -5,12 +5,12 @@ services:
     build:
       context: .
       args:
-        BASE_URL: /ruderobot
+        BASE_URL: /
     networks:
       net:
         ipv4_address: 172.102.0.1
     environment:
-      OPENAI_API_KEY: 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
+      OPENAI_API_KEY: <YOUR OPENAPI KEYS>
       MONGO_CONNECTION_STRING: mongodb://root:rootPassword@172.102.0.2:27017
     ports:
       - "8112:80"
